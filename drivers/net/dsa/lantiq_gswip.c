@@ -1355,9 +1355,9 @@ static void gswip_port_stp_state_set(struct dsa_switch *ds, int port, u8 state)
 }
 
 static int gswip_port_fdb(struct dsa_switch *ds, int port,
-			  const unsigned char *addr, u16 vid, bool add)
+			  const unsigned char *addr, u16 vid, struct dsa_db db, bool add)
 {
-	struct net_device *bridge = dsa_port_bridge_dev_get(dsa_to_port(ds, port));
+	struct net_device *bridge = db.bridge.dev;
 	struct gswip_priv *priv = ds->priv;
 	struct gswip_pce_table_entry mac_bridge = {0,};
 	unsigned int max_ports = priv->hw_info->max_ports;
@@ -1401,14 +1401,14 @@ static int gswip_port_fdb_add(struct dsa_switch *ds, int port,
 			      const unsigned char *addr, u16 vid,
 			      struct dsa_db db)
 {
-	return gswip_port_fdb(ds, port, addr, vid, true);
+	return gswip_port_fdb(ds, port, addr, vid, db, true);
 }
 
 static int gswip_port_fdb_del(struct dsa_switch *ds, int port,
 			      const unsigned char *addr, u16 vid,
 			      struct dsa_db db)
 {
-	return gswip_port_fdb(ds, port, addr, vid, false);
+	return gswip_port_fdb(ds, port, addr, vid, db, false);
 }
 
 static int gswip_port_fdb_dump(struct dsa_switch *ds, int port,
@@ -2128,6 +2128,7 @@ static int gswip_probe(struct platform_device *pdev)
 
 	priv->ds->dev = dev;
 	priv->ds->num_ports = priv->hw_info->max_ports;
+	priv->ds->fdb_isolation = true;
 	priv->ds->priv = priv;
 	priv->ds->ops = priv->hw_info->ops;
 	priv->dev = dev;
